@@ -14,9 +14,21 @@ ui <- dashboardPage(
     dashboardSidebar(
         
         sidebarMenu(
+            id = 'Menu',
+            # h1('Primer Nivel'),
             menuItem('Lectura de datos', tabName = 'Reader', icon = icon('eye')),
+            # h2('Segundo nivel'),
+            # p('Ejemplo de parrafo'),
             menuItem('Visualización de datos', tabName = 'Viewer', icon = icon('arrow-right')),
-            uiOutput('controles_ejex')
+            conditionalPanel(condition = 'input.Menu ==  "Viewer"', 
+                             uiOutput('controles_ejex'),
+                             conditionalPanel(
+                                 'input.eje_x != "Ninguna"',
+                                 uiOutput('controles_ejey')
+                             )
+                             )
+                             
+            
         )
         
     ), 
@@ -78,6 +90,8 @@ ui <- dashboardPage(
      
 )
 
+
+# Create server -----------------------------------------------------------
 server <- function(input, output){
     
     output$controles_excel <- renderUI({
@@ -146,6 +160,16 @@ server <- function(input, output){
           
     })
     
+    output$controles_ejey <- renderUI({
+        
+        selectInput(inputId = 'eje_y', label = 'Eje Y', 
+                    choices = c('Ninguna', colnames(datos_crudos())),
+                    selected = 'Ninguna',
+                    multiple = FALSE)
+        
+        
+    })
+    
     output$grafica <- renderPlot({
         
         datos <- as.data.frame(datos_crudos())
@@ -168,7 +192,7 @@ server <- function(input, output){
             colnames(tab) <- c(input$eje_x, 'Total')
             
             gg <- ggplot(data = tab, aes_string(x = input$eje_x, y = 'Total')) +
-                geom_bar(stat = 'identity')
+                geom_bar(stat = 'identity', fill = 'steelblue')
             
         } 
         
